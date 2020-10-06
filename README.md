@@ -91,13 +91,13 @@ Convert from BAM files to filtered VCF files.
 
 ##### Parameters and links file
 
-The parameter and links file should contain links to the reference genome and a link to lists of positions you want to call in your sample(s). This list should be split by chromosome. I am using **Gronau regions** (see [README](https://gitlab.com/manica-group/genetics_pipeline/blob/master/Gronau_filters/Gronau_filters.md) ). It should also contain links to GATK, VCFtools and python scripts (provided in  [scripts](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) folder on gitlab). 
+The parameter and links file should contain links to the reference genome and a link to lists of positions you want to call in your sample(s). This list should be split by chromosome. I am using **Gronau regions** (see [README](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/blob/main/Gronau_filters/Gronau_filters.md) ). It should also contain links to GATK, VCFtools and python scripts (provided in  [scripts](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) folder on gitlab). 
 
 The parameter and links file should specify the minimum and maximum genotype depth for filtering. The depth can be written in absolute terms or an X can be used to specify the coverage relative to the average genotype coverage within the Gronau windows e.g. max_depth: 2X is 2 times the average coverage. 
 
 The *clean_up* option specifies whether you want intermediate files to be deleted (Y/N), and *merge* specifies whether you want a single vcf file at the end (Y) or one vcf per chromosome (N).
 
-*Example parameters and links file*
+*Example parameters and links file* **copy param file from cluster**
 
 ```
 data,
@@ -116,3 +116,46 @@ max_depth:,2X
 clean_up:,Y
 merge:,N
 ```
+# to be updated
+
+##### The filter\_ancient\_bams.sh script
+
+You will need a machine which has at least 23 cores. BAM files are split by chromosome (autosomes only) and genotypes called using Genome Analysis Toolkit Unified Genotyper. The input priors are set to equal for homozygous reference and homozygous alternate genotypes (as done for the Simons Genome Diversity panel). Positions of interest are specified in the parameters and links file. Positions where there is a G with a C called immediately up or downstream are removed as are positions with a C called and a G immediately up or downstream of it.  C and G sites with a missing genotype immediately preceding or proceeding it are also removed. Genotypes are filtered by a minimum and maximum depth threshold as specified in the parameters and links file. The depth can be written in absolute terms or an X can be used to specify the coverage relative to the average genotype coverage within the Gronau windows e.g. max_depth: 2X is 2 times the average coverage. 
+
+**Running the script**
+
+```bash
+bash filter_ancient_bams.sh <parameters_and_links.csv>
+```
+
+### 3. Merging VCF files
+
+I tend to merge VCF files semi-manually. It is more efficient to merge per chromosome across samples (can be run in parallel) and then concatenate the chromosomes together (i.e. merge sample1_chr1 sample2_chr1 sample3_chr1  > all_samples_chr1. Then merge all_samples_chr1 all_samples_chr2 etc) than to merge across all chromosomes within a sample and then merge across samples. An example script "merge_vcf_example.sh" which merges files using VCFtools can be found in the [scripts](https://gitlab.com/manica-group/genetics_pipeline/tree/master/scripts) folder. 
+
+### 4. Calculate pairwise pi and within sample heterozygosity
+
+##### Dependencies
+1. [PLINK](https://www.cog-genomics.org/plink/1.9/) (v1.9).
+2. Python3 libraries [PANDAS](https://pandas.pydata.org/) and [NumPy](http://www.numpy.org/).
+
+##### Inputs and top level scripts
+1. A gzipped VCF file.
+2. The [calculate_pairwise_pi.sh](https://gitlab.com/manica-group/genetics_pipeline/tree/master/scripts) script.
+3. The [add_within_sample_heterozygosity_to_pairwise_pi_matrix.py](https://gitlab.com/manica-group/genetics_pipeline/tree/master/scripts) script.
+
+##### The calculate\_pairwise\_pi.sh script
+This script can be use to calculate pairwise pi between all individuals in a gzipped VCF file (calculated using PLINK) and the within sample heterozygosity. 
+
+**Running the script**
+
+```bash
+bash calculate_pairwise_pi.sh <input_file.vcf.gz>
+```
+
+You can then run a python script to format these data into a matrix in csv format with the within sample heterozygosity on the main diagonal:
+
+```bash
+python3 add_within_sample_heterozygosity_to_pairwise_pi_matrix.py <input_mdist_file_without_file_extension> <input_heterozygosity_file>
+```
+
+The final table can be found in *_pairwise_pi.csv.
