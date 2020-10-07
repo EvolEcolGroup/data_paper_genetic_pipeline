@@ -5,7 +5,7 @@ There are four main steps to go from FASTQ files to a pairwise pi matrix:
 1. FASTQ -> BAM.
 2. BAM -> VCF.
 3. Merge VCF files.
-4. Calculate pairwise pi and within sample heterozygosity.
+4. Filtering final dataset.
 
 ## 1. FASTQ to BAM
 
@@ -117,7 +117,6 @@ max_depth:,2X
 clean_up:,Y
 merge:,N
 ```
-# to be updated
 
 ##### The filter\_ancient\_bams.sh script
 
@@ -131,32 +130,23 @@ bash filter_ancient_bams.sh <parameters_and_links.csv>
 
 ### 3. Merging VCF files
 
-I tend to merge VCF files semi-manually. It is more efficient to merge per chromosome across samples (can be run in parallel) and then concatenate the chromosomes together (i.e. merge sample1_chr1 sample2_chr1 sample3_chr1  > all_samples_chr1. Then merge all_samples_chr1 all_samples_chr2 etc) than to merge across all chromosomes within a sample and then merge across samples. An example script "merge_vcf_example.sh" which merges files using VCFtools can be found in the [scripts](https://gitlab.com/manica-group/genetics_pipeline/tree/master/scripts) folder. 
+VCF files are merged semi-manually. It is more efficient to merge per chromosome across samples (can be run in parallel) and then concatenate the chromosomes together (i.e. merge sample1_chr1 sample2_chr1 sample3_chr1  > all_samples_chr1. Then merge all_samples_chr1 all_samples_chr2 etc) than to merge across all chromosomes within a sample and then merge across samples. An example script "merge_vcf_example.sh" which merges files using VCFtools can be found in the [scripts](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) folder. If you already have vcf files per sample and you want to merge them across samples, you can use `bcftools merge -O z --threads 32 sample1.vcf.gz sample2.vcf.gz sample3.vcf.gz > final_dataset.vcf.gz`.
 
-### 4. Calculate pairwise pi and within sample heterozygosity
+### 4. Filtering final dataset
 
-##### Dependencies
-1. [PLINK](https://www.cog-genomics.org/plink/1.9/) (v1.9).
-2. Python3 libraries [PANDAS](https://pandas.pydata.org/) and [NumPy](http://www.numpy.org/).
+After merging, the dataset is filtered to remove all missing data and triallelic sites.
 
-##### Inputs and top level scripts
-1. A gzipped VCF file.
-2. The [calculate_pairwise_pi.sh](https://gitlab.com/manica-group/genetics_pipeline/tree/master/scripts) script.
-3. The [add_within_sample_heterozygosity_to_pairwise_pi_matrix.py](https://gitlab.com/manica-group/genetics_pipeline/tree/master/scripts) script.
+##### Removing missing data
+All sites showing even just one missing genotype across the dataset are discarded using vcftools:
 
-##### The calculate\_pairwise\_pi.sh script
-This script can be use to calculate pairwise pi between all individuals in a gzipped VCF file (calculated using PLINK) and the within sample heterozygosity. 
+`vcftools --gzvcf final_dataset.vcf.gz" --max-missing 1 --recode-INFO-all --recode --stdout | bgzip -c -@ 32 > final_dataset_noMissing.vcf.gz`
 
-**Running the script**
+##### Removing triallelic sites
+Triallelic site are removed with bcftools:
 
-```bash
-bash calculate_pairwise_pi.sh <input_file.vcf.gz>
-```
+`bcftools view final_dataset_noMissing.vcf.gz -O z -m1 -M2 --threads 32  -o final_dataset_noMissing_noTriallelic.vcf.gz`
 
-You can then run a python script to format these data into a matrix in csv format with the within sample heterozygosity on the main diagonal:
+##### Number of transitions and transversions
+The number of transitions and transversions is calculate using bcftools:
 
-```bash
-python3 add_within_sample_heterozygosity_to_pairwise_pi_matrix.py <input_mdist_file_without_file_extension> <input_heterozygosity_file>
-```
-
-The final table can be found in *_pairwise_pi.csv.
+`bcftools stats -s - final_dataset_noMissing_noTriallelic.vcf.gz > final_dataset_noMissing_noTriallelic_bcftools_stats`
