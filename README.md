@@ -1,6 +1,6 @@
 # Genetic pipeline to process genetic data from ancient and modern individuals
 
-The pipeline is divided in two main sections for ancient and modern samples.
+The pipeline is divided in two main sections for ancient and modern samples. At the end, there are two additional steps to merge and filter all samples (both ancient and modern) together. 
 
 ## Ancient samples
 
@@ -158,14 +158,14 @@ You will need a machine which has at least 23 cores. BAM files are split by chro
 
 **Running the script**
 
-The script shoul be submitted within the folder containing the BAM file. 
+The script should be submitted within the folder containing the BAM file. 
 ```bash
 bash filter_modern_bams.sh
 ```
 
 ## Modern and ancient samples
 
-After VCF files were generated for both moderna dn ancient samples, they can be merged to create a final dataset
+After VCF files have been generated for both modern adn ancient samples, they can be merged into a final dataset
 
 1. Merging VCF files.
 2. Filtering final dataset.
