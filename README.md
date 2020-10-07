@@ -1,4 +1,4 @@
-# Genetic pipeline to process genetic data from ancient and modern individuals
+# Pipeline to process genetic data from ancient and modern individuals
 
 The pipeline is divided in two main sections for ancient and modern samples. At the end, there are two additional steps to merge and filter all samples (both ancient and modern) together. 
 
