@@ -141,12 +141,12 @@ All sites showing even just one missing genotype across the dataset are discarde
 
 `vcftools --gzvcf final_dataset.vcf.gz" --max-missing 1 --recode-INFO-all --recode --stdout | bgzip -c -@ 32 > final_dataset_noMissing.vcf.gz`
 
-#### Removing triallelic sites
+##### Removing triallelic sites
 Triallelic site are removed with bcftools:
 
 `bcftools view final_dataset_noMissing.vcf.gz -O z -m1 -M2 --threads 32  -o final_dataset_noMissing_noTriallelic.vcf.gz`
 
-#### Number of transitions and transversions
+##### Number of transitions and transversions
 The number of transitions and transversions is calculate using bcftools:
 
 `bcftools stats -s - final_dataset_noMissing_noTriallelic.vcf.gz > final_dataset_noMissing_noTriallelic_bcftools_stats`
