@@ -1,13 +1,16 @@
-# Genetic pipeline to process genetic data from FASTQ files to a pairwise pi matrix
+# Genetic pipeline to process genetic data from ancient and modern individuals
 
-There are four main steps to go from FASTQ files to a pairwise pi matrix:
+The pipeline is divided in two main sections for ancient and modern samples.
+
+## Ancient samples
+
+There are three main steps to go from FASTQ files to a filtered multi-sample vcf file:
 
 1. FASTQ -> BAM.
 2. BAM -> VCF.
 3. Merge VCF files.
-4. Filtering final dataset.
 
-## 1. FASTQ to BAM
+### 1. FASTQ to BAM
 
 ##### Dependencies
 1. Python v3.
@@ -131,6 +134,11 @@ bash filter_ancient_bams.sh <parameters_and_links.csv>
 ### 3. Merging VCF files
 
 VCF files are merged semi-manually. It is more efficient to merge per chromosome across samples (can be run in parallel) and then concatenate the chromosomes together (i.e. merge sample1_chr1 sample2_chr1 sample3_chr1  > all_samples_chr1. Then merge all_samples_chr1 all_samples_chr2 etc) than to merge across all chromosomes within a sample and then merge across samples. An example script "merge_vcf_example.sh" which merges files using VCFtools can be found in the [scripts](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) folder. If you already have vcf files per sample and you want to merge them across samples, you can use `bcftools merge -O z --threads 32 sample1.vcf.gz sample2.vcf.gz sample3.vcf.gz > final_dataset.vcf.gz`.
+
+
+## Modern samples
+
+
 
 ### 4. Filtering final dataset
 
