@@ -8,12 +8,11 @@ There are three main steps to go from FASTQ files to a filtered multi-sample vcf
 
 1. FASTQ -> BAM.
 2. BAM -> VCF.
-3. Merge VCF files.
 
 ### 1. FASTQ to BAM
 
 ##### Dependencies
-1. Python v3.
+1. Python (v3).
 2. [SAMtools](http://www.htslib.org/download/) (v1.9).
 3. [BWA](http://bio-bwa.sourceforge.net/) (v0.7.12).
 4. [Cutadapt](http://cutadapt.readthedocs.io/en/stable/) (v1.9.1).
@@ -82,7 +81,7 @@ bash output_file.sh
 Convert from BAM files to filtered VCF files.
 
 ##### Dependencies
-1. Python (v2.7.12)
+1. Python (v3)
 2. [SAMtools](http://www.htslib.org/download/) (v1.9).
 3. [GenomeAnalysisToolkit](https://software.broadinstitute.org/gatk/) (v3.7).
 4. [VCFtools](http://vcftools.sourceforge.net/perl_module.html) (v0.1.5).
@@ -131,16 +130,52 @@ You will need a machine which has at least 23 cores. BAM files are split by chro
 bash filter_ancient_bams.sh <parameters_and_links.csv>
 ```
 
-### 3. Merging VCF files
+
+## Modern samples
+
+Mondern samples were processed from bam files. All modern samples were downloaded from the [Cancer Genomics Cloud](https://cgc.sbgenomics.com/u/sevenbridges/simons-genome-diversity-project-sgdp/files) except for JHM06 which is described in [McColl H et al., 2018](https://science.sciencemag.org/content/361/6397/88?fbclid=IwAR2K_oBfFR7SUPCk7l8r4GBQO5XsIR01MJCxHz3vRKRlovQ2iQSgIuhVIo8). 
+
+1. BAM -> VCF.
+
+### 1. BAM to VCF
+
+Convert BAM files to filtered VCF files.
+
+##### Dependencies
+1. Python (v3)
+2. [SAMtools](http://www.htslib.org/download/) (v1.9).
+3. [GenomeAnalysisToolkit](https://software.broadinstitute.org/gatk/) (v3.7).
+4. [VCFtools](http://vcftools.sourceforge.net/perl_module.html) (v0.1.5).
+5. filter_GC.py (provided in [scripts](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) folder).
+6. filter_vcf_minDepth_maxDepth.py (provided in [scripts](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) folder).
+
+##### Inputs and top level scripts
+1. The [filter_modern_bams.sh](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) script.
+
+##### The filter\_modern\_bams.sh script
+
+You will need a machine which has at least 23 cores. BAM files are split by chromosome (autosomes only) and genotypes called using Genome Analysis Toolkit Unified Genotyper. Only sites within the **Gronau regions** will be called (see [README](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/blob/main/Gronau_filters/Gronau_filters.md) ). The input priors are set to equal for homozygous reference and homozygous alternate genotypes (as done for the Simons Genome Diversity panel). Positions where there is a G with a C called immediately up or downstream are removed as are positions with a C called and a G immediately up or downstream of it. C and G sites with a missing genotype immediately preceding or proceeding it are also removed. Genotypes are filtered by a minimum coverage of 20x and maximum depth defined as twice the average genotype coverage within the Gronau regions. Paths to specific tools/scripts, bed files containing the intervals of the Gronau regions and reference genome have to be manually changed within the filter\_modern\_bams.sh script 
+
+**Running the script**
+
+The script shoul be submitted within the folder containing the BAM file. 
+```bash
+bash filter_modern_bams.sh
+```
+
+## Modern and ancient samples
+
+After VCF files were generated for both moderna dn ancient samples, they can be merged to create a final dataset
+
+1. Merging VCF files.
+2. Filtering final dataset.
+
+### 1. Merging VCF files
 
 VCF files are merged semi-manually. It is more efficient to merge per chromosome across samples (can be run in parallel) and then concatenate the chromosomes together (i.e. merge sample1_chr1 sample2_chr1 sample3_chr1  > all_samples_chr1. Then merge all_samples_chr1 all_samples_chr2 etc) than to merge across all chromosomes within a sample and then merge across samples. An example script "merge_vcf_example.sh" which merges files using VCFtools can be found in the [scripts](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/scripts) folder. If you already have vcf files per sample and you want to merge them across samples, you can use `bcftools merge -O z --threads 32 sample1.vcf.gz sample2.vcf.gz sample3.vcf.gz > final_dataset.vcf.gz`.
 
 
-## Modern samples
-
-
-
-### 4. Filtering final dataset
+### 2. Filtering final dataset
 
 After merging, the dataset is filtered to remove all missing data and triallelic sites.
 
