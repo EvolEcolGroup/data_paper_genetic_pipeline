@@ -1,7 +1,7 @@
 #### Gronau filters
 
-We used the following filters to select regions representing neutral genetic diversity. Filters come from Gronau *et al.,* in [this paper](XXX) **Add correct reference**. 
-Raw filters are available from [raw](XXX).**Add correct link**
+We used the following filters to select regions representing neutral genetic diversity. Filters come from Gronau *et al.,* in [this paper](https://www.nature.com/articles/ng.937). 
+Raw filters are available from [raw](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/Gronau_filters/raw).
 
 Details of these regions:
 
@@ -57,4 +57,4 @@ for i in {1..22};do
 awk '{if ($1=='"${i}"') print $0}' ../autosomes_with_Gronau_filters.bed > autosomes_with_Gronau_filters_chr${i}.bed &
 done
 ```
-These split files are available in [bed_files](XXX). Depeding on the reference sequence, you would need to add "chr" in front of each chromosome number. **check which version we used on the cluster and transfer them to the folder**
+These split files are available in [bed_files](https://github.com/EvolEcolGroup/data_paper_genetic_pipeline/tree/main/Gronau_filters/bed_files). Depending on the reference sequence, you would need to add "chr" in front of each chromosome number.
