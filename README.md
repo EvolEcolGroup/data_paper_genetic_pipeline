@@ -165,7 +165,7 @@ bash filter_modern_bams.sh
 
 ## Modern and ancient samples
 
-After VCF files have been generated for both modern adn ancient samples, they can be merged into a final dataset
+After VCF files have been generated for both modern and ancient samples, they can be merged into a final dataset
 
 1. Merging VCF files.
 2. Filtering final dataset.
